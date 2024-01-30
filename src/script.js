@@ -3,12 +3,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry'
-// import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader'
 
 
-/**
- * Base
- */
 // Debug
 const gui = new GUI()
 
@@ -17,14 +13,6 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-
-// ENVIRONMENT
-
-// const loader = new EXRLoader()
-// loader.load('./sunset.exr', (texture) => {
-//     texture.mapping = THREE.EquirectangularReflectionMapping
-//     scene.background = texture
-// })
 
 // textures
 const textureLoader = new THREE.TextureLoader()
@@ -38,23 +26,25 @@ const matcap6 = textureLoader.load('./textures/matcaps/6.png')
 const matcap7 = textureLoader.load('./textures/matcaps/7.png')
 const matcap8 = textureLoader.load('./textures/matcaps/av.png')
 const myMatcaps = [
-    new THREE.MeshMatcapMaterial({ matcap: matcap }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap1 }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap2 }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap3 }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap4 }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap5 }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap6 }), 
-    new THREE.MeshMatcapMaterial({ matcap: matcap7 }), 
+    new THREE.MeshMatcapMaterial({ matcap: matcap }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap1 }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap2 }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap3 }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap4 }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap5 }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap6 }),
+    new THREE.MeshMatcapMaterial({ matcap: matcap7 }),
     new THREE.MeshMatcapMaterial({ matcap: matcap8 })
 ]
+
+
+
 
 // Fonts
 const fontLoader = new FontLoader()
 fontLoader.load(
     '/fonts/helvetiker_regular.typeface.json',
-    (font) => 
-    {
+    (font) => {
         const textGeometry = new TextGeometry(
             "Holy Donuts!",
             {
@@ -68,7 +58,7 @@ fontLoader.load(
                 bevelOffset: 0,
                 bevelSegments: 4
             }
-        ) 
+        )
         textGeometry.center()
 
         const material = new THREE.MeshMatcapMaterial({ matcap })
@@ -76,36 +66,66 @@ fontLoader.load(
 
         scene.add(text)
 
-            const donutGeometry = new THREE.TorusGeometry(1)
+        const donutGeometry = new THREE.TorusGeometry(1)
+        const discGeometry = new THREE.BoxGeometry(.1, .1, 10)
+        const discMaterial = new THREE.MeshBasicMaterial({  color: 'silver'})
         const donuts = []
+        const discs = []
 
-        for (let i = 0; i < 1250; i++) {
-        const donutMaterial = myMatcaps[Math.floor(Math.random()*myMatcaps.length)]
-              const donut = new THREE.Mesh(
+        for (let i = 0; i < 1150; i++) {
+
+            const donutMaterial = myMatcaps[Math.floor(Math.random() * myMatcaps.length)]
+            const donut = new THREE.Mesh(
                 donutGeometry,
                 donutMaterial
-               )
+            )
 
-       donut.position.x = (Math.random() - .5) * 100
-       donut.position.y = (Math.random() - .5) * 100
-       donut.position.z = (Math.random() - .5) * 100
+            const disc = new THREE.Mesh(
+                discGeometry,
+                discMaterial
+            )
 
-       donut.rotation.x = Math.random() * Math.PI
-       donut.rotation.y = Math.random() * Math.PI
-    
-       const scale = Math.random()
-       donut.scale.set(scale, scale, scale)
+            donut.position.x = (Math.random() - .5) * 100
+            donut.position.y = (Math.random() - .5) * 100
+            donut.position.z = (Math.random() - .5) * 100
+            
+            disc.position.x = (Math.random() - .5) * 400
+            disc.position.y = (Math.random() - .5) * 400
+            disc.position.z = (Math.random() - .5) * 400
+            
+            donut.rotation.x = Math.random() * Math.PI
+            donut.rotation.x = Math.random() * Math.PI
 
-       scene.add(donut)
-       donuts.push(donut)
+
+
+            const scale = Math.random()
+            donut.scale.set(scale, scale, scale)
+            disc.scale.set(scale, scale, scale)
+
+            scene.add(donut, disc)
+            donuts.push(donut)
+            discs.push(disc)
         }
+
+
 
         const loop = () => {
             text.rotation.x += .01
             text.rotation.y += .01
-            for(const donut of donuts) {
+            for (const donut of donuts) {
                 donut.rotation.y += .01
                 donut.rotation.x += .1
+            }
+            for (const disc of discs) {
+                if (disc.position.z > 0) {
+                    disc.position.z = -100
+                }
+                disc.position.z += .5
+                disc.position.x += Math.random() > .5 ? -.01 : .01
+                disc.position.y += Math.random() > .5 ? -.01 : .01
+                
+                disc.rotation.y += .01
+                disc.rotation.x += .01
             }
             window.requestAnimationFrame(loop)
         }
@@ -115,17 +135,12 @@ fontLoader.load(
 )
 
 
-//environment
-
-
-
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
 
@@ -159,8 +174,7 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 // Animate
 
-const loop = () =>
-{
+const loop = () => {
     controls.update()
 
     renderer.render(scene, camera)
